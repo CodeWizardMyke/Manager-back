@@ -6,11 +6,11 @@ const  paginateDefine = require('../functions/paginateDefine');
 const empoloyee_search_controller = {
   getById: async (req, res) => {
     try {
-      let {employee_id} = req.headers;
+      let {query} = req.headers;
       
-      if(!employee_id) employee_id = req.decoded.employee_id;
+      if(!query) query = req.decoded.employee_id;
 
-      const data = await Employee.findByPk(employee_id);
+      const data = await Employee.findByPk(query);
       return res.json(data);
 
     } catch (error) {
@@ -22,11 +22,11 @@ const empoloyee_search_controller = {
     try {
       const {size, page} = paginateDefine(req);
       
-      const {name} = req.headers;
-      if(!name) return res.status(401).json({error:{path:'title',msg:'Informe o nome do funcionário!'}});
+      const {query} = req.headers;
+      if(!query) return res.status(401).json({error:{path:'title',msg:'Informe o nome do funcionário!'}});
 
       const data = await Employee.findAndCountAll({
-        where:{ name:{[Op.like]: `%${name}%`} },
+        where:{ name:{[Op.like]: `%${query}%`} },
         limit: size,
         offset: size * (page - 1),
       })
@@ -40,12 +40,12 @@ const empoloyee_search_controller = {
     try {
       const {size, page} = paginateDefine(req);
       
-      const {email} = req.headers;
+      const {query} = req.headers;
       console.log(req.headers)
-      if(!email) return res.status(401).json({error:{path:'email',msg:'Informe o email do funcionário!'}});
+      if(!query) return res.status(401).json({error:{path:'email',msg:'Informe o email do funcionário!'}});
 
       const data = await Employee.findAndCountAll({
-        where:{ email:{[Op.like]: `${email}%`} },
+        where:{ email:{[Op.like]: `${query}%`} },
         limit: size,
         offset: size * (page - 1),
       })
