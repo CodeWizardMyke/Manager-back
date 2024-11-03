@@ -13,7 +13,6 @@ module.exports = (sequelize,DataTypes)=>{
       allowNull:false 
     },
     official_store_name:DataTypes.STRING,
-    category:DataTypes.STRING,
     discribe:DataTypes.TEXT,
     currency_type:DataTypes.STRING,
     price:{
@@ -34,10 +33,7 @@ module.exports = (sequelize,DataTypes)=>{
     },
     use_thumbnail:DataTypes.STRING,
     thumbnails:DataTypes.STRING,
-    brand:{
-      type:DataTypes.STRING,
-      allowNull:false
-    },
+
     gender:{
       type:DataTypes.STRING,
       allowNull:false 
@@ -54,11 +50,22 @@ module.exports = (sequelize,DataTypes)=>{
     catalog_listing:DataTypes.STRING,
     discounts:DataTypes.STRING,
     promotions:DataTypes.DECIMAL,
+    fk_brand_id:DataTypes.INTEGER,
+    fk_category_id:DataTypes.INTEGER,
   },
   {
     tableName:'product',
     timestamps:false,
   })
+
+  Product.associate = (models) => {
+    Product.belongsTo(models.Brand, {
+      foreignKey: 'fk_brand_id', as: 'brand_id'
+    })
+    Product.belongsTo(models.Category, {
+      foreignKey: 'fk_category_id', as: 'category_id'
+    })
+  }
 
   return Product;
 } 

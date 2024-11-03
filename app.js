@@ -27,6 +27,8 @@ const cart_crud_router = require('./src/routes/cart_crud_router');
 const cart_item_crud_router = require('./src/routes/cart_item_crud_router');
 const client_search_router = require('./src/routes/client_search_router');
 const client_cart_router = require('./src/routes/client_cart_router');
+const category_crud_router = require('./src/routes/category_crud_router');
+const brand_crud_router = require('./src/routes/brand_crud_router');
 
 app.use('/cart', client_cart_router);
 app.use('/api/auth', employee_auth_router);
@@ -39,6 +41,8 @@ app.use('/api/cart/crud', cart_crud_router);
 app.use('/api/cart_item/crud', cart_item_crud_router);
 app.use('/api/client/crud', client_crud_router);
 app.use('/api/client/search', client_search_router);
+app.use('/api/category', category_crud_router);
+app.use('/api/brand', brand_crud_router);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

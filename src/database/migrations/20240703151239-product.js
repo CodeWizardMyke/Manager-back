@@ -15,7 +15,6 @@ module.exports = {
         allowNull:false
       },
       official_store_name:Sequelize.STRING,
-      category:Sequelize.STRING,
       discribe:Sequelize.TEXT,
       currency_type:Sequelize.STRING,
       price:{
@@ -39,10 +38,7 @@ module.exports = {
         type:Sequelize.STRING,
         allowNull:false
       },
-      brand:{
-        type:Sequelize.STRING,
-        allowNull:false
-      },
+
       gender:{
         type:Sequelize.STRING,
         allowNull:false
@@ -59,6 +55,20 @@ module.exports = {
       catalog_listing:Sequelize.STRING,
       discounts:Sequelize.STRING,
       promotions:Sequelize.DECIMAL,
+      fk_brand_id:{
+        type:Sequelize.INTEGER,
+        references:{
+          model:'brand',
+          key:'brand_id'
+        }
+      },
+      fk_category_id:{
+        type:Sequelize.INTEGER,
+        references:{
+          model:'category',
+          key:'category_id'
+        }
+      }
     })
   },
 

@@ -1,7 +1,5 @@
-const { parse } = require('dotenv');
 const {Cart, Cart_item, Product} = require('../database/models');
 const paginateDefine = require('../functions/paginateDefine');
-const bcrpty = require('bcrypt');
 
 const Cart_crud_controller = {
   create: async (req, res) => {

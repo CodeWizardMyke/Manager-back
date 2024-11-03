@@ -1,7 +1,5 @@
 const {Employee} = require('../database/models');
-
 const bcrypt = require('bcrypt');
-
 
 const eu_pass_update = async (req, res, next) => {
   const {password, email} = req.body;

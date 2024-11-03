@@ -5,6 +5,11 @@ const jwt = require('jsonwebtoken');
 
 const jsonwebtoken = async (req, res, next) => {
   const baerer = req.headers.authorization;
+
+  if(!baerer){
+    return res.status(401).json({msg:"Obtenha o token para realizar esssa ação!"})
+  }
+
   const token = baerer.split(' ')[1];
   
   if(!baerer || !token) return res.status(401).json({errors: [{path:'token',msg:'token inválido!'}] });
