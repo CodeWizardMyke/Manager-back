@@ -4,13 +4,16 @@ const removeFiles = require('../functions/removeUploadedFiles');
 const pc_check_fields = async ( req, res, next ) => {
     const checkResult = validationResult(req);
     let errors  = null;
-
-    if(!req.files){
-        errors = [{path:'thumbnails',msg:'Nenuhma imag em do produto foi inserida!'}]
+    
+    if(!req.files || !req.files.length){
+        let  e = [{path:'thumbnails',msg:'Nenuhma imag em do produto foi inserida!'}]
+        return res.status(400).json(e)
     }
+
     if(!checkResult.isEmpty()){
         errors = checkResult
     }
+
     if(errors){
         removeFiles(req.files)
         return res.status(400).json(errors);
