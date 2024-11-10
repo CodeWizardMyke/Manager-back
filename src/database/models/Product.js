@@ -14,58 +14,57 @@ module.exports = (sequelize,DataTypes)=>{
     },
     official_store_name:DataTypes.STRING,
     discribe:DataTypes.TEXT,
-    currency_type:DataTypes.STRING,
-    price:{
+    currency:DataTypes.STRING,
+    product_cost:{
       type:DataTypes.DECIMAL,
       allowNull:false 
     },
-    originam_price:{
+    selling_price:{
       type:DataTypes.DECIMAL,
       allowNull:false
     },
-    sale_price:{
+    profit_margin:{
       type:DataTypes.DECIMAL,
       allowNull:false
     },
+    discounts:DataTypes.INTEGER,
     stock:{
       type:DataTypes.INTEGER,
       allowNull:false
     },
     use_thumbnail:DataTypes.STRING,
-    thumbnails:DataTypes.STRING,
-
-    gender:{
-      type:DataTypes.STRING,
-      allowNull:false 
-    },
+    thumbnails:DataTypes.TEXT,
+    product_state:DataTypes.STRING,
+    movie_url:DataTypes.STRING,
     GTIN:DataTypes.STRING,
-    item_condittion:DataTypes.STRING,
-    line:{
+    NET_VOLUM:{
       type:DataTypes.STRING,
       allowNull:false
     },
-    NET_VOLUM:DataTypes.STRING,
     NET_WEIGHT:DataTypes.STRING,
     winner_item_id:DataTypes.STRING,
     catalog_listing:DataTypes.STRING,
-    discounts:DataTypes.STRING,
-    promotions:DataTypes.DECIMAL,
-    fk_brand_id:DataTypes.INTEGER,
+    additional:DataTypes.STRING,
+    product_shape:DataTypes.STRING,
+    isNewArrival:DataTypes.STRING,
+    targetGender:DataTypes.STRING,
+    age_group:DataTypes.STRING,
     fk_category_id:DataTypes.INTEGER,
+    fk_brand_id:DataTypes.INTEGER,
   },
   {
     tableName:'product',
-    timestamps:false,
+    timestamps:true,
   })
 
   Product.associate = (models) => {
     Product.belongsTo(models.Brand, {
-      foreignKey: 'fk_brand_id', as: 'brand_id'
-    })
+      foreignKey: 'fk_brand_id'
+    });
     Product.belongsTo(models.Category, {
-      foreignKey: 'fk_category_id', as: 'category_id'
-    })
-  }
-
+      foreignKey: 'fk_category_id'
+    });
+  };
+  
   return Product;
 } 

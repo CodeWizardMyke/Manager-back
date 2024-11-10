@@ -16,7 +16,7 @@ module.exports = (Sequelize, DateTypes) =>{
     Brand.associate = (models) => {
         // Uma categoria possui muitos produtos
         Brand.hasMany(models.Product, { 
-            foreignKey: 'fk_brand _id', 
+            foreignKey: 'fk_brand_id', 
             as: 'products' 
         });
     };

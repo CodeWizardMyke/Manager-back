@@ -1,23 +1,47 @@
 const {validationResult} = require('express-validator');
+const removeFiles = require('../functions/removeUploadedFiles');
 
-const prod_price_convert = require('../functions/prod_price_convert');
-const remove_image = require('../functions/remove_image');
-
-const pc_check_fields = ( req, res, next ) => {
-    if(!req.file){
-        return res.status(400).json({errors: [{path:'thumbnails',msg:'Nenuhma imagem selecionada!'}] } );
-    }
-
+const pc_check_fields = async ( req, res, next ) => {
     const checkResult = validationResult(req);
-    if (!checkResult.isEmpty()) {
-        remove_image(req.body.thumbnails);
-        console.log(checkResult);
-        return res.status(400).json(checkResult);
+    let errors  = null;
+
+    if(!req.files){
+        errors = [{path:'thumbnails',msg:'Nenuhma imag em do produto foi inserida!'}]
+    }
+    if(!checkResult.isEmpty()){
+        errors = checkResult
+    }
+    if(errors){
+        removeFiles(req.files)
+        return res.status(400).json(errors);
     }
 
-    const err = prod_price_convert(req,res);
+    const {thumbnail_length, advertising_length, thumbnails } = req.body;
+    let arrFormated = []
 
-    //if(err) return res.status(400).json(err);
+    let arrayThumbnail = thumbnails.slice(0,thumbnail_length);
+    arrayThumbnail.forEach( element => {
+        let itemString = {
+            locail:element,
+            isAdvertising:0
+        };
+        arrFormated.push(itemString)
+    });
+
+    let arrayAdvertising = thumbnails.slice( thumbnail_length , Number(advertising_length) + Number(thumbnail_length) );
+    arrayAdvertising.forEach(element => {
+        let itemString = {
+            locail:element,
+            isAdvertising:1
+        };
+        arrFormated.push(itemString)
+    });
+    
+    req.body.thumbnails = JSON.stringify(arrFormated)
+    req.body.product_state = 'E'
+    req.body.discounts = Number(req.body.discounts)
+    req.body.profit_margin = Number(req.body.profit_margin)
+    req.body.fees_and_taxes = Number(req.body.fees_and_taxes)
     
     return next();
 };

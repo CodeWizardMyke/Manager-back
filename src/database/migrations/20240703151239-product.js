@@ -16,45 +16,49 @@ module.exports = {
       },
       official_store_name:Sequelize.STRING,
       discribe:Sequelize.TEXT,
-      currency_type:Sequelize.STRING,
-      price:{
+      currency:Sequelize.STRING,
+      product_cost:{
         type:Sequelize.DECIMAL,
         allowNull:false
       },
-      originam_price:{
+      selling_price:{
         type:Sequelize.DECIMAL,
         allowNull:false
       },
-      sale_price:{
+      profit_margin:{
         type:Sequelize.DECIMAL,
         allowNull:false
       },
+      discounts:Sequelize.INTEGER,
       stock:{
         type:Sequelize.INTEGER,
         allowNull:false
       },
       use_thumbnail:Sequelize.STRING,
-      thumbnails:{
-        type:Sequelize.STRING,
-        allowNull:false
-      },
-
-      gender:{
-        type:Sequelize.STRING,
-        allowNull:false
-      },
+      thumbnails:Sequelize.TEXT,
+      product_state:Sequelize.STRING,
+      use_movie:Sequelize.STRING,
+      movie_url:Sequelize.STRING,
       GTIN:Sequelize.STRING,
-      item_condittion:Sequelize.STRING,
-      line:{
+      NET_VOLUM:{
         type:Sequelize.STRING,
         allowNull:false
       },
-      NET_VOLUM:Sequelize.STRING,
       NET_WEIGHT:Sequelize.STRING,
       winner_item_id:Sequelize.STRING,
       catalog_listing:Sequelize.STRING,
-      discounts:Sequelize.STRING,
-      promotions:Sequelize.DECIMAL,
+      additional:Sequelize.STRING,
+      product_shape:Sequelize.STRING,
+      isNewArrival:Sequelize.STRING,
+      targetGender:Sequelize.STRING,
+      age_group:Sequelize.STRING,
+      fk_category_id:{
+        type:Sequelize.INTEGER,
+        references:{
+          model:'category',
+          key:'category_id'
+        }
+      },
       fk_brand_id:{
         type:Sequelize.INTEGER,
         references:{
@@ -62,13 +66,14 @@ module.exports = {
           key:'brand_id'
         }
       },
-      fk_category_id:{
-        type:Sequelize.INTEGER,
-        references:{
-          model:'category',
-          key:'category_id'
-        }
-      }
+      createdAt: {
+        type: Sequelize.DATE,
+        defaultValue: Sequelize.literal('CURRENT_TIMESTAMP'),
+      },
+      updatedAt: {
+        type: Sequelize.DATE,
+        defaultValue: Sequelize.literal('CURRENT_TIMESTAMP'),
+      },
     })
   },
 

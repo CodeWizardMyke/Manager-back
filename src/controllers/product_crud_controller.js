@@ -6,7 +6,6 @@ const remove_image = require('../functions/remove_image');
 const product_crud_router = {
     create: async (req, res) => {
         try {
-            
             const data = await Product.create(req.body)
             return res.json(data);
 
@@ -17,13 +16,16 @@ const product_crud_router = {
     },
     read: async (req, res) => {
         try {
-            const {page, size} = paginateDefine(req)
-            const data = await Product.findAndCountAll({
-                limit:size,
-                offset: (size * (page - 1))
-            });
+            const {size,page} = paginateDefine(req);
 
-            return res.status(200).json(data);
+            console.log('req.body', req.body)
+
+            const products = await Product.findAndCountAll({
+                limit:size,
+                offset: size* (page -1)
+            })
+
+            return res.json(products);
         } catch (error) {
             console.log(error);
             return res.status(401).json(error)
