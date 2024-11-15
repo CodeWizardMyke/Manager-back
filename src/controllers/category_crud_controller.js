@@ -9,7 +9,7 @@ const category_controller =  {
             const {category_name} = req.body;
 
             const categoryIsExistis = await Category.findAll({
-                where:{category_name: { [Op.like]: '% '+ category_name +' %' } }
+                where:{category_name: category_name }
             })
 
             if(categoryIsExistis.length){
