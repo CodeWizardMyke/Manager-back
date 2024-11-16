@@ -1,4 +1,4 @@
-const {Product} =require('../database/models');
+const {Product,Brand,Category} =require('../database/models');
 
 const paginateDefine = require('../functions/paginateDefine');
 const remove_image = require('../functions/remove_image');
@@ -22,7 +22,11 @@ const product_crud_router = {
 
             const products = await Product.findAndCountAll({
                 limit:size,
-                offset: size* (page -1)
+                offset: size* (page -1),
+                include:[
+                    {model:Brand},
+                    {model:Category},
+                ]
             })
 
             return res.json(products);
