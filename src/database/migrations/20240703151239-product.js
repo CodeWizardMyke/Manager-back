@@ -35,7 +35,6 @@ module.exports = {
         allowNull:false
       },
       use_thumbnail:Sequelize.STRING,
-      thumbnails:Sequelize.TEXT,
       product_state:Sequelize.STRING,
       use_movie:Sequelize.STRING,
       movie_url:Sequelize.STRING,

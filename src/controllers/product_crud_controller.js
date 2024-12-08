@@ -1,4 +1,4 @@
-const {Product,Brand,Category} =require('../database/models');
+const {Product,Brand,Category, Thumbnails} =require('../database/models');
 
 const paginateDefine = require('../functions/paginateDefine');
 const remove_image = require('../functions/remove_image');
@@ -6,9 +6,28 @@ const remove_image = require('../functions/remove_image');
 const product_crud_router = {
     create: async (req, res) => {
         try {
-            const data = await Product.create(req.body)
-            return res.json(data);
+            const {thumbnail_length, advertising_length, thumbnails } = req.body;
+            const response = await Product.create(req.body)
+            
+            const getThumbnails = thumbnails.slice(0,thumbnail_length);
+            getThumbnails.forEach( async element => {
+                await Thumbnails.create({
+                    'fk_product_id': response.product_id,
+                    'path': element,
+                    'type':0
+                })
+            }); 
 
+            const getAdvertisings = thumbnails.slice( thumbnail_length , Number(advertising_length) + Number(thumbnail_length) );
+            getAdvertisings.forEach( async element => {
+                await Thumbnails.create({
+                    'fk_product_id': response.product_id,
+                    'path': element,
+                    'type':1
+                })
+            }); 
+            
+            return res.json(response);
         } catch (error) {
             console.log(error);
             return res.status(401).json(error)
@@ -26,6 +45,7 @@ const product_crud_router = {
                 include:[
                     {model:Brand},
                     {model:Category},
+                    {model:Thumbnails, as: 'productThumbnails'}
                 ]
             })
 
@@ -37,13 +57,27 @@ const product_crud_router = {
     },
     update: async (req, res) => {
         try {
-            const {product_id} = req.headers;
+            const {product_id,thumbnails_removed,filesCreate} = req.body;
             
-            const data = await Product.findByPk(product_id);
-            req.file ? remove_image(data.thumbnails) : '';
-            await data.update(req.body);
+            if(thumbnails_removed){
+                thumbnails_removed.forEach( async element => {
+                    const removeThis = await Thumbnails.findByPk(Number(element));
+                    remove_image(removeThis.path);
+                    await removeThis.destroy();
+                });
+            };
 
-            return res.json(data);
+            if(filesCreate){
+                filesCreate.forEach( async element => {
+                    await Thumbnails.create(element)
+                })
+            }
+
+            const data = await Product.findByPk(product_id);
+
+           const updated = await data.update(req.body);
+
+           return res.json(updated);
         } catch (error) {
             console.log(error);
             return res.status(401).json(error)
@@ -54,6 +88,7 @@ const product_crud_router = {
             const {product_id} = req.headers;
         
             const data = await Product.findByPk(product_id);
+
             remove_image(data.thumbnails);
 
             await data.destroy();

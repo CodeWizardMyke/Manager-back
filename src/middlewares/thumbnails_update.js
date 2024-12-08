@@ -20,9 +20,10 @@ const storage = multer.diskStorage({
         
         // Adiciona apenas o caminho da imagem ao array thumbnails
         req.body.thumbnails.push(`/thumbnails/${uniqueSuffix}`);
+        
         cb(null, uniqueSuffix); // Define o nome do arquivo
     }
-}); 
+});
 
 const fileFilter = (req, file, cb) => {
     if (file.mimetype.startsWith('image/')) {
@@ -34,9 +35,9 @@ const fileFilter = (req, file, cb) => {
     }
 };
 
-const thumbnails_update = multer({
+const images_upload = multer({
     storage: storage,
     fileFilter: fileFilter,
 });
 
-module.exports = thumbnails_update;
+module.exports = images_upload;

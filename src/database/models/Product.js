@@ -33,7 +33,6 @@ module.exports = (sequelize,DataTypes)=>{
       allowNull:false
     },
     use_thumbnail:DataTypes.STRING,
-    thumbnails:DataTypes.TEXT,
     product_state:DataTypes.STRING,
     movie_url:DataTypes.STRING,
     GTIN:DataTypes.STRING,
@@ -63,6 +62,10 @@ module.exports = (sequelize,DataTypes)=>{
     });
     Product.belongsTo(models.Category, {
       foreignKey: 'fk_category_id'
+    });
+    Product.hasMany(models.Thumbnails, {
+      foreignKey: "fk_product_id",
+      as: "productThumbnails",
     });
   };
   
