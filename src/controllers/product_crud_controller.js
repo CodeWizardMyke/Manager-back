@@ -74,8 +74,16 @@ const product_crud_router = {
             }
 
             const data = await Product.findByPk(product_id);
+            await data.update(req.body);
 
-           const updated = await data.update(req.body);
+            const updated = await Product.findOne({
+                where:{product_id:product_id},
+                include:[
+                    {model:Category},
+                    {model:Brand},
+                    {model:Thumbnails, as:'productThumbnails'},
+                ]
+            })
 
            return res.json(updated);
         } catch (error) {
