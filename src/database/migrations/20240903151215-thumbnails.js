@@ -1,4 +1,5 @@
 'use strict';
+//adicione esssa tabela ao final para ser criada por utimo para nao dar erro de chave estrangeira
 
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
