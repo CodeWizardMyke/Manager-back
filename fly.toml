@@ -1,0 +1,30 @@
+# fly.toml app configuration file generated for backend-aisha on 2024-07-08T13:14:28-03:00
+#
+# See https://fly.io/docs/reference/configuration/ for information about how to use this file.
+#
+
+app = 'backend-aisha'
+primary_region = 'gru'
+
+[build]
+
+[env]
+  DB_DIALECT = 'postgres'
+  DB_PORT = '5433'
+  DB_USERNAME = 'postgres'
+  LOG_LEVEL = 'debug'
+  RAILS_ENV = 'production'
+  S3_BUCKET = 'my-app-production'
+
+[http_service]
+  internal_port = 3000
+  force_https = true
+  auto_stop_machines = true
+  auto_start_machines = true
+  min_machines_running = 0
+  processes = ['app']
+
+[[vm]]
+  memory = '1gb'
+  cpu_kind = 'shared'
+  cpus = 2
