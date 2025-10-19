@@ -11,7 +11,7 @@ const jsonwebtoken = require('../middlewares/jsonwebtoken');
 const images_upload = require('../middlewares/images_upload');
 
 router.post('/create', 
-    images_upload.array('thumbnails',6),
+    images_upload.array('thumbnails',8),
     sweep_fields,
     check_fields,
     jsonwebtoken,

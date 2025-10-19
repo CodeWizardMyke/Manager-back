@@ -6,31 +6,39 @@ const remove_image = require('../functions/remove_image');
 const product_crud_router = {
     create: async (req, res) => {
         try {
-            const {thumbnail_length, advertising_length, thumbnails } = req.body;
+            const {thumbnail_length, advertising_length, images } = req.body;
+            // Cria o produto no banco de dados
             const response = await Product.create(req.body)
             
-            const getThumbnails = thumbnails.slice(0,thumbnail_length);
-            getThumbnails.forEach( async element => {
-                await Thumbnails.create({
-                    'fk_product_id': response.product_id,
-                    'path': element,
-                    'type':0
+            const thumbnails = images.slice(0, Number(thumbnail_length));
+            const advertisings = images.slice(
+              Number(thumbnail_length),
+              Number(thumbnail_length) + Number(advertising_length)
+            );
+          
+            // Função genérica para salvar imagens
+            const saveImages = async (imageArray, type) => {
+              if (!imageArray.length) return;
+              await Promise.all(
+                imageArray.map(async (path) => {
+                  console.log(`Salvando imagem (${type}):`, path);
+                  await Thumbnails.create({
+                    fk_product_id: response.product_id,
+                    path,
+                    type,
+                  });
                 })
-            }); 
+              );
+            };
+          
+            // Salva ambos os tipos
+            await saveImages(thumbnails, 0);
+            await saveImages(advertisings, 1);
 
-            const getAdvertisings = thumbnails.slice( thumbnail_length , Number(advertising_length) + Number(thumbnail_length) );
-            getAdvertisings.forEach( async element => {
-                await Thumbnails.create({
-                    'fk_product_id': response.product_id,
-                    'path': element,
-                    'type':1
-                })
-            }); 
-            
             return res.json(response);
         } catch (error) {
             console.log(error);
-            return res.status(401).json(error)
+            return res.status(500).json(error)
         }
     },
     read: async (req, res) => {
@@ -52,7 +60,7 @@ const product_crud_router = {
             return res.json(products);
         } catch (error) {
             console.log(error);
-            return res.status(401).json(error)
+            return res.status(500).json(error)
         }
     },
     update: async (req, res) => {
@@ -88,7 +96,7 @@ const product_crud_router = {
            return res.json(updated);
         } catch (error) {
             console.log(error);
-            return res.status(401).json(error)
+            return res.status(500).json(error)
         }
     },
     destroy: async (req, res) => {
@@ -104,7 +112,7 @@ const product_crud_router = {
             
         } catch (error) {
             console.log(error);
-            return res.status(401).json(error)
+            return res.status(500).json(error)
         }
     },
 };

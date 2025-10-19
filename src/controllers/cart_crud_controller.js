@@ -40,7 +40,7 @@ const Cart_crud_controller = {
 
     } catch (error) {
       console.log(error);
-      return res.status(401).json(error)  
+      return res.status(500).json(error)  
     }
   },
   read:  async (req, res) => {
@@ -60,7 +60,7 @@ const Cart_crud_controller = {
       return res.json(data);
     } catch (error) {
       console.log(error);
-      return res.status(401).json(error)  
+      return res.status(500).json(error)  
     }
   },
   update: async (req, res) => {
@@ -71,7 +71,7 @@ const Cart_crud_controller = {
       return res.json(data);
     } catch (error) {
       console.log(error);
-      return res.status(401).json(error)  
+      return res.status(500).json(error)  
     }
   },
   delete: async (req, res) => {
@@ -110,7 +110,7 @@ const Cart_crud_controller = {
       return res.json({successful:{msg:"o carrinho foi criado com sucesso!"}});
     } catch (error) {
       console.log(error);
-      return res.status(401).json(error)  
+      return res.status(500).json(error)  
     } 
   }
 };

@@ -24,7 +24,7 @@ const client_crud = {
             return res.status(200).json(data);
         } catch (error) {
             console.log(error);
-            return res.json(error)
+            return res.status(500).send(error)
         }
     },
     get_all: async (req,res) => {
@@ -39,7 +39,7 @@ const client_crud = {
             return res.json(data);
         } catch (error) {
             console.log(error);
-            return res.json(error);
+            return res.status(500).send(error);
         }
     }
 };

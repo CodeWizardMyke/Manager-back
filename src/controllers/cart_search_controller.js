@@ -24,7 +24,7 @@ const cart_search_controller = {
       return res.json(data);
     } catch (error) {
       console.log(error);
-      return res.status(401).json(error)  
+      return res.status(500).json(error)  
     }
   },
   get_all_cart:  async (req, res) => {
@@ -43,7 +43,7 @@ const cart_search_controller = {
       return res.json(data);
     } catch (error) {
       console.log(error);
-      return res.status(401).json(error)  
+      return res.status(500).json(error)  
     }
   }, 
 };

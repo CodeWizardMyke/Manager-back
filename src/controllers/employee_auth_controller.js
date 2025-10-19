@@ -18,7 +18,7 @@ const employee_auth_controller = {
 
     } catch (error) {
       console.log(error);
-      return res.status(401).json(error)  
+      return res.status(500).json(error)  
     }
   },
   logout: async (req, res) => {
@@ -26,7 +26,7 @@ const employee_auth_controller = {
       return res.json('logout realizado com sucesso!')
     } catch (error) {
       console.log(error);
-      return res.status(401).json(error)
+      return res.status(500).json(error)
     }
   }
 };

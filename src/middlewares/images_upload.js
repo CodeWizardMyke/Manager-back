@@ -16,11 +16,11 @@ const storage = multer.diskStorage({
     filename: (req, file, cb) => {
         const uniqueSuffix = `${Date.now()}_${Math.round(Math.random() * 1E9)}.jpg`;
         
-        if(!req.body.thumbnails_uniqueSuffix){
-            req.body.thumbnails_uniqueSuffix = []
+        if(!req.body.images){
+            req.body.images = []
         }
 
-        req.body.thumbnails_uniqueSuffix.push(`/thumbnails/${uniqueSuffix}`);
+        req.body.images.push(`/thumbnails/${uniqueSuffix}`);
         
         cb(null, uniqueSuffix); // Define o nome do arquivo
     }

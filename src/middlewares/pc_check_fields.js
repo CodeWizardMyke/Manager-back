@@ -9,7 +9,7 @@ const pc_check_fields = async ( req, res, next ) => {
     let errors  = null;
 
     if(!req.files || !req.files.length){
-        let  e = [{path:'thumbnails',msg:'Nenuhma imag em do produto foi inserida!'}]
+        let  e = [{path:'thumbnails',msg:'Nenuhma imagem do produto foi inserida!'}]
         return res.status(400).json({errors:e})
     }
 

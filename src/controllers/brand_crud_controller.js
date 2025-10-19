@@ -20,12 +20,12 @@ const brand_crud_controller =  {
                 return res.status(401).json({error:'Nome da Marca deve ser preenchido!'})
             }
 
-            await Brand.create(req.body);
-            return res.status(201).json({"msg":"Criado com sucesso"});
+            const item =  await Brand.create(req.body);
+            return res.status(201).json({"msg":"Criado com sucesso", data:item});
 
         } catch (error) {
             console.log('error', error);
-            res.status(401).json(error);
+            res.status(500).json(error);
         }
     },
     read: async (req,res) => {
@@ -42,7 +42,7 @@ const brand_crud_controller =  {
 
         } catch (error) {
             console.log('error', error);
-            res.status(401).json(error);
+            res.status(500).json(error);
         }
     },
     update: async (req,res) => {
@@ -63,7 +63,6 @@ const brand_crud_controller =  {
             console.log(error);
             return res.status(500).json(error);
           }
-          
     },
     delete: async (req,res) => {
         try {
@@ -78,7 +77,7 @@ const brand_crud_controller =  {
 
         } catch (error) {
             console.log('error', error);
-            return res.status(404).json(error);
+            return res.status(500).json(error);
         }
     },
     getById: async (req,res) => {
@@ -91,7 +90,7 @@ const brand_crud_controller =  {
             
         } catch (error) {
             console.log('error', error);
-            return res.status(401).json(error);
+            return res.status(500).json(error);
         }
     }
 }

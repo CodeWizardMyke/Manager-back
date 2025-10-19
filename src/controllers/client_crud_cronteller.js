@@ -57,7 +57,7 @@ const client_crud = {
             
         } catch (error) {
             console.log(error);
-            return res.json(error)
+            return res.status(500).send(error)
         }
     },
 };

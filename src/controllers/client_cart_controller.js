@@ -2,6 +2,7 @@ const { Cart, Cart_item, Client } = require('../database/models');
 
 const client_cart_controller = {
   get_pending: async (req, res) => {
+   try {
     const {id} = req.params
     const dataCart = [];
 
@@ -16,6 +17,10 @@ const client_cart_controller = {
       dataCart.push(response)
     }
     res.send({client:client, cart:dataCart})
+   } catch (error) {
+    console.log('error', error);
+    return res.status(500).json(error)
+   }
   }
 }
 

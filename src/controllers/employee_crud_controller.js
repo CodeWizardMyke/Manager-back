@@ -8,7 +8,7 @@ const employee_crud_controller = {
       return res.json(data);
     } catch (error) {
       console.log(error);
-      return res.status(401).json(error)  
+      return res.status(500).json(error)  
     }
   },
   readEmployee:  async (req, res) => {
@@ -25,7 +25,7 @@ const employee_crud_controller = {
       return res.json(data);
     } catch (error) {
       console.log(error);
-      return res.status(401).json(error)  
+      return res.status(500).json(error)  
     }
   },
   updateEmployee: async (req, res) => {
@@ -37,7 +37,7 @@ const employee_crud_controller = {
       return res.json(data);
     } catch (error) {
       console.log(error);
-      return res.status(401).json(error)  
+      return res.status(500).json(error)  
     }
   },
   deleteEmployee: async (req, res) => {
@@ -48,7 +48,7 @@ const employee_crud_controller = {
       return res.json(`successfully deleted employee_id = ${data}`);
     } catch (error) {
       console.log(error);
-      return res.status(401).json(error)  
+      return res.status(500).json(error)  
     } 
   }
 };
