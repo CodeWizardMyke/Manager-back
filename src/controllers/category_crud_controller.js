@@ -91,7 +91,7 @@ const category_controller =  {
             
         } catch (error) {
             console.log('error', error);
-            return res.status(500).json(error);
+            return res.status(500).json(error)
         }
     }
 }

@@ -17,7 +17,7 @@ module.exports = (Sequelize, DateTypes) =>{
         // Uma categoria possui muitos produtos
         Brand.hasMany(models.Product, { 
             foreignKey: 'fk_brand_id', 
-            as: 'products' 
+            as: 'brandProduct' 
         });
     };
     return Brand;

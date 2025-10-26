@@ -17,7 +17,7 @@ module.exports = (sequelize, DataTypes) => {
 
     Thumbnails.associate = (models) => {
         Thumbnails.belongsTo(models.Product, { 
-            foreignKey: "fk_product_id",as:'productThumbnails'
+            foreignKey: "fk_product_id",as:'product'
         });
     }
 

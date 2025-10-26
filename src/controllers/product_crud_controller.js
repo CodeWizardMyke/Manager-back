@@ -45,15 +45,13 @@ const product_crud_router = {
         try {
             const {size,page} = paginateDefine(req);
 
-            console.log('req.body', req.body)
-
             const products = await Product.findAndCountAll({
                 limit:size,
                 offset: size* (page -1),
                 include:[
-                    {model:Brand},
-                    {model:Category},
-                    {model:Thumbnails, as: 'productThumbnails'}
+                    {model:Brand, as:'brandProduct'},
+                    {model:Category , as:'categoryProduct'},
+                    {model:Thumbnails, as: 'thumbnails', require:false},
                 ]
             })
 
