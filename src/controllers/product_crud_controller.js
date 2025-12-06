@@ -48,6 +48,7 @@ const product_crud_router = {
             const products = await Product.findAndCountAll({
                 limit:size,
                 offset: size* (page -1),
+                distinct: true,
                 include:[
                     {model:Brand, as:'brandProduct'},
                     {model:Category , as:'categoryProduct'},
@@ -63,7 +64,13 @@ const product_crud_router = {
     },
     update: async (req, res) => {
         try {
-            const {product_id,thumbnails_removed,filesCreate} = req.body;
+            const {product_id, thumbnails_removed, filesCreate} = req.body;
+
+            if(filesCreate){
+                filesCreate.forEach( async element => {
+                    await Thumbnails.create(element)
+                });
+            }
             
             if(thumbnails_removed){
                 thumbnails_removed.forEach( async element => {
@@ -73,21 +80,17 @@ const product_crud_router = {
                 });
             };
 
-            if(filesCreate){
-                filesCreate.forEach( async element => {
-                    await Thumbnails.create(element)
-                })
-            }
-
+    
             const data = await Product.findByPk(product_id);
+
             await data.update(req.body);
 
             const updated = await Product.findOne({
                 where:{product_id:product_id},
                 include:[
-                    {model:Category},
-                    {model:Brand},
-                    {model:Thumbnails, as:'productThumbnails'},
+                    {model:Brand, as:'brandProduct'},
+                    {model:Category , as:'categoryProduct'},
+                    {model:Thumbnails, as: 'thumbnails', require:false},
                 ]
             })
 
