@@ -24,10 +24,10 @@ router.get('/read',
 );
 
 router.put('/update', 
-    images_upload.array('thumbnails',6),
+    images_upload.array('thumbnails',8),
+    update_check_fields,
     jsonwebtoken,
-    update_check_fields
-    ,product_crud_controller.update
+    product_crud_controller.update
 );
 
 router.delete('/destroy', 

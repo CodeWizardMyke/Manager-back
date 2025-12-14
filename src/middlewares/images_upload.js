@@ -5,8 +5,7 @@ const multer = require('multer');
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
         const localPath = path.resolve(__dirname, '../public/thumbnails');
-        
-        // Cria o diretório se não existir
+
         if (!fs.existsSync(localPath)) {
             fs.mkdirSync(localPath, { recursive: true });
         }
@@ -14,17 +13,14 @@ const storage = multer.diskStorage({
         cb(null, localPath);
     },
     filename: (req, file, cb) => {
-        const uniqueSuffix = `${Date.now()}_${Math.round(Math.random() * 1E9)}.jpg`;
-        
-        if(!req.body.images){
-            req.body.images = []
-        }
+        const uniqueSuffix = `${Date.now()}_${Math.random()}.jpg`;
 
+        if (!req.body.images) req.body.images = [];
         req.body.images.push(`/thumbnails/${uniqueSuffix}`);
-        
-        cb(null, uniqueSuffix); // Define o nome do arquivo
+
+        cb(null, uniqueSuffix);
     }
-}); 
+});
 
 const fileFilter = (req, file, cb) => {
     if (file.mimetype.startsWith('image/')) {
@@ -36,9 +32,7 @@ const fileFilter = (req, file, cb) => {
     }
 };
 
-const thumbnails_update = multer({
-    storage: storage,
-    fileFilter: fileFilter,
+module.exports = multer({
+    storage,
+    fileFilter
 });
-
-module.exports = thumbnails_update;
