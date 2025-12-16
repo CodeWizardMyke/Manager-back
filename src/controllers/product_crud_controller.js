@@ -134,15 +134,24 @@ const product_crud_router = {
         try {
             const { product_id } = req.headers;
 
+            if(!product_id) return res.status(400).json('product_id is required in headers');
+
             const product = await Product.findByPk(product_id);
 
-            if (product && product.thumbnails) {
-                product.thumbnails.forEach(t => remove_image(t.path));
+            if(!product) return res.status(404).json(`product_id =${product_id} not found`);
+
+            const thumbnails = await Thumbnails.findAll({
+                where: { fk_product_id: product_id }
+            });
+
+            for (const thumb of thumbnails) {
+                remove_image(thumb.path);
+                await thumb.destroy();
             }
-
+            
             await product.destroy();
-
-            return res.json(`successfully deleted product_id = ${product_id}`);
+            
+            return res.json(`successfully deleted product_id =${product_id}`);
 
         } catch (error) {
             console.log(error);
