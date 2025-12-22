@@ -32,13 +32,10 @@ const product_crud_router = {
                 }
             };
 
-           const thumbsave =  await saveImages(thumbnails, 0);
-            const advertsave = await saveImages(advertisings, 1);
+            await saveImages(thumbnails, 0);
+            await saveImages(advertisings, 1);
 
-            console.log('thumbsave', thumbnails)
-            console.log('advertsave', advertisings)
-
-            //return res.json(product);
+            return res.json(product);
 
         } catch (error) {
             console.log(error);
@@ -70,7 +67,9 @@ const product_crud_router = {
 
     update: async (req, res) => {
         try {
-            const { product_id, thumbnails_removed, thumbnail_length, advertising_length } = req.body;
+            const { product_id, thumbnails_removed, thumbnail_length, advertising_length, movie_removed } = req.body;
+
+            if(movie_removed){ req.body.movie_url = null; }
 
             if(thumbnails_removed && thumbnails_removed !== ""){
                 const imagesToRemovedById = thumbnails_removed.split(',').map(id => Number(id));
@@ -83,7 +82,6 @@ const product_crud_router = {
                       await thumb.destroy();
                     }
                   }
-                  
             }
 
             if(thumbnail_length && thumbnail_length > 0){
