@@ -32,13 +32,26 @@ const client_crud = {
     update: async (req, res ) => {
         try {
             const {client_id}  = req.headers
-            console.log('client_id', client_id)
+            const {clientInstagram} = req.body;
+            if(!client_id){
+                return res.status(400).json({errors:{errors:[{path:'client_id',msg:"client id não foi recebido!"}]}})
+            }
 
             const data = await Client.findOne({where:{client_id:client_id}});
-            delete req.body.client_id;
+            
+            async function checkExistsInstagram(instagram){
+                const consultResult = await Client.findOne({where:{clientInstagram:clientInstagram}})
+                if(consultResult){
+                    return res.status(400).json({errors:{errors:[{path:'clientInstagram',msg:"Este instagram já é cadastrado a outro cliente!"}]}})
+                }
+            }
 
-            await data.update(req.body);
-            return res.send('Atualizado!')
+            if(clientInstagram && clientInstagram !== data.clientInstagram){
+                checkExistsInstagram(clientInstagram);
+            }
+
+            const updatedData = await data.update(req.body);
+            return res.json(updatedData);
 
         } catch (error) {
             console.log(error);
@@ -48,7 +61,9 @@ const client_crud = {
     delete: async (req, res ) => {
         try {
             const {client_id} = req.headers;
-            console.log(client_id)
+            if(!client_id){
+                return res.status(400).json({errors:{errors:[{path:'client_id',msg:"client id não foi recebido!"}]}})
+            }
 
             const data = await Client.findOne({where:{client_id:client_id}});
             await data.destroy() ;

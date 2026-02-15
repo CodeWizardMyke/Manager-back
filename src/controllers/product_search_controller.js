@@ -9,8 +9,10 @@ const product_search_controller = {
       const {size, page} = paginateDefine(req);
       
       const {query} = req.headers;
-      let   title = query.toString().trim();
-      if(!title) return res.status(401).json({error:{path:'title',msg:'Nenhum título foi recebido!'}});
+      console.log(query)
+
+      let title = query.toString().trim();
+      if (!title) return res.status(401).json({error:{path:'title',msg:'Nenhum título foi recebido!'}});
 
       const data = await Product.findAndCountAll({
         where:{ title:{[Op.like]: `%${title}%`} },
@@ -30,10 +32,10 @@ const product_search_controller = {
   },
   getById: async (req, res) => {
     try {
-      const {product_id} = req.headers;
+      const {query} = req.headers;
 
-      const data = await Product.findOne({
-        where:{ product_id: product_id },
+      const data = await Product.findAndCountAll({
+        where:{ product_id: Number(query) },
         include:[
           {model:Brand, as:'brandProduct'},
                     {model:Category , as:'categoryProduct'},

@@ -6,16 +6,16 @@ const paginateDefine = require('../functions/paginateDefine');
 const client_crud = {
     instagram: async (req, res ) => {
         try {
-            const{instagram} = req.headers
-            if(!instagram){
-                return res.send({Error:{msg:"Is not passed a instagram!"}})
+            const{clientinstagram} = req.headers
+            if(!clientinstagram){
+                return res.send({error:{msg:"instagram do cliente não foi informado!"}})
             }
             
             const {size, page} = paginateDefine(req)
             
             const data = await Client.findAndCountAll({
                 where:{
-                    clientInstagram:{[Op.like]:`${instagram}%`}
+                    clientInstagram:{[Op.like]:`%${clientinstagram}%`}
                 },
                 limit:size,
                 offset: size * (page -1)
