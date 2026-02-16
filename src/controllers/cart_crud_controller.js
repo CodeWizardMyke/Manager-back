@@ -12,7 +12,6 @@ const Cart_crud_controller = {
         fk_client_id: req.body.client_id
       }
 
-      //extracting the items in the cart from the front end
       const {items} = req.body;
 
       //scrolling through all items in the cart
@@ -21,7 +20,7 @@ const Cart_crud_controller = {
 
         //update objectCart structure data
         objectCart.qtd_products += item.qtd_products ;
-        objectCart.amount += Number(product.price) * item.qtd_products;
+        objectCart.amount += Number(product.selling_price) * item.qtd_products;
       }
 
       const dataCartCreated = await Cart.create(objectCart)
@@ -35,8 +34,7 @@ const Cart_crud_controller = {
         })
       }
 
-      const url = '/cart/client/' + req.body.client_id ;
-      return res.status(201).json({cartLink:url})
+      return res.status(201).json(dataCartCreated);
 
     } catch (error) {
       console.log(error);
@@ -107,7 +105,7 @@ const Cart_crud_controller = {
       //delete own cart
       await cartData.destroy();
 
-      return res.json({successful:{msg:"o carrinho foi criado com sucesso!"}});
+      return res.json({successful:{msg:"o carrinho foi deletado com sucesso!"}});
     } catch (error) {
       console.log(error);
       return res.status(500).json(error)  

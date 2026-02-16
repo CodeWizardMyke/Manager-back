@@ -1,31 +1,13 @@
 const {Client} = require('../database/models');
 
 const check_client_existis = async (req, res, next) => {
-    const {clientInstagram,clientName} = req.body;
-    let id;
+    const { client_id} = req.body;
 
-    if(!clientInstagram){
-        return res.status(401).json({Error:{msg:"Nenhum instagram foi passado!"}})
+    const checkedClient = await Client.findByPk(Number(client_id));
+
+    if(!checkedClient){
+        return res.status(400).json({error:{path:'client_id',msg:"Id cliente inválido!"}})
     }
-
-    const clientData = await Client.findOne({
-        where:{clientInstagram:clientInstagram}
-    })
-
-    if(!clientData){
-        const newClient = await Client.create(
-            {
-                clientName:clientName,
-                clientInstagram:clientInstagram
-            }
-        )
-
-        id = newClient.client_id;
-    }else{
-        id = clientData.client_id;
-    }
-
-    req.body.client_id = id;
 
     return next();
 };
