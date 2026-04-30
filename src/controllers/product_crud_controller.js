@@ -17,10 +17,8 @@ const product_crud_router = {
         try {
             const thumbnails = req.files?.thumbnails || [];
             const advertisings = req.files?.advertisings || [];
-            console.log(req.body);
 
             const product = await Product.create(req.body);
-            console.log(product);
 
             await saveImages(product.product_id, thumbnails, 0);
             await saveImages(product.product_id, advertisings, 1);
