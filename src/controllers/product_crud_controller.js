@@ -2,30 +2,28 @@ const { Product, Brand, Category, Thumbnails } = require('../database/models');
 const paginateDefine = require('../functions/paginateDefine');
 const remove_image = require('../functions/remove_image');
 
-// função genérica de salvar
-const saveImages = async (paths, type) => {
-    if (!paths.length) return;
-
-    for (const path of paths) {
+const saveImages = async (product_id, files, type) => {
+    for (const file of files) {
         await Thumbnails.create({
-            fk_product_id: product.product_id,
-            path,
-            type
+        fk_product_id: product_id,
+        path: `/${file.fieldname}/${file.filename}`,
+        type
         });
     }
 };
 
-
 const product_crud_router = {
     create: async (req, res) => {
         try {
-            const thumbnails = req.file.thumbnails || [];
-            const advertisings = req.file.advertisings || [];
+            const thumbnails = req.files?.thumbnails || [];
+            const advertisings = req.files?.advertisings || [];
+            console.log(req.body);
 
             const product = await Product.create(req.body);
+            console.log(product);
 
-            await saveImages(thumbnails, 0);
-            await saveImages(advertisings, 1);
+            await saveImages(product.product_id, thumbnails, 0);
+            await saveImages(product.product_id, advertisings, 1);
 
             return res.json(product);
 
@@ -97,21 +95,12 @@ const product_crud_router = {
             console.error("Erro ao processar remoção de imagens:", error);
         }
         }
-
-        const saveImages = async (files, type) => {
-        for (const file of files) {
-            await Thumbnails.create({
-            fk_product_id: product_id,
-            path: `/${file.fieldname}/${file.filename}`,
-            type
-            });
-        }
-        };
-
-        await saveImages(thumbnails, 0);
-        await saveImages(advertisings, 1);
+   
 
         const product = await Product.findByPk(product_id);
+
+        await saveImages(product_id,thumbnails, 0);
+        await saveImages(product_id,advertisings, 1);
 
         if (!product) {
         return res.status(404).json({ error: "Product not found" });
