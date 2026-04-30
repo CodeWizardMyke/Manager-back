@@ -11,7 +11,10 @@ const jsonwebtoken = require('../middlewares/jsonwebtoken');
 const images_upload = require('../middlewares/images_upload');
 
 router.post('/create', 
-    images_upload.array('thumbnails',8),
+    images_upload.fields([
+        {name:"thumbnails"},
+        {name:"advertisings"}
+    ]),
     sweep_fields,
     check_fields,
     jsonwebtoken,
@@ -24,7 +27,10 @@ router.get('/read',
 );
 
 router.put('/update', 
-    images_upload.array('thumbnails',8),
+    images_upload.fields([
+        {name:"thumbnails"},
+        {name:"advertisings"}
+    ]),
     update_check_fields,
     jsonwebtoken,
     product_crud_controller.update

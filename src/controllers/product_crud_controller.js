@@ -2,35 +2,27 @@ const { Product, Brand, Category, Thumbnails } = require('../database/models');
 const paginateDefine = require('../functions/paginateDefine');
 const remove_image = require('../functions/remove_image');
 
+// função genérica de salvar
+const saveImages = async (paths, type) => {
+    if (!paths.length) return;
+
+    for (const path of paths) {
+        await Thumbnails.create({
+            fk_product_id: product.product_id,
+            path,
+            type
+        });
+    }
+};
+
+
 const product_crud_router = {
     create: async (req, res) => {
         try {
-            const { thumbnail_length, advertising_length } = req.body;
+            const thumbnails = req.file.thumbnails || [];
+            const advertisings = req.file.advertisings || [];
 
-            // cria o produto
             const product = await Product.create(req.body);
-
-            const images = req.body.images ?? [];
-            console.log('req.body', req.body)
-
-            const thumbnails = images.slice(0, Number(thumbnail_length));
-            const advertisings = images.slice(
-                Number(thumbnail_length),
-                Number(thumbnail_length) + Number(advertising_length)
-            );
-
-            // função genérica de salvar
-            const saveImages = async (paths, type) => {
-                if (!paths.length) return;
-
-                for (const path of paths) {
-                    await Thumbnails.create({
-                        fk_product_id: product.product_id,
-                        path,
-                        type
-                    });
-                }
-            };
 
             await saveImages(thumbnails, 0);
             await saveImages(advertisings, 1);
@@ -67,60 +59,76 @@ const product_crud_router = {
 
     update: async (req, res) => {
         try {
-            const { product_id, thumbnails_removed, thumbnail_length, advertising_length, movie_removed } = req.body;
+            const { product_id, thumbnails_removed, movie_removed } = req.body;
 
-            if(movie_removed){ req.body.movie_url = null; }
+        if (!product_id) {
+            return res.status(400).json({ error: "product_id is required" });
+        }
 
-            if(thumbnails_removed && thumbnails_removed !== ""){
-                const imagesToRemovedById = thumbnails_removed.split(',').map(id => Number(id));
-                console.log('createArrayId', imagesToRemovedById)
+        const thumbnails = req.files?.thumbnails || [];
+        const advertisings = req.files?.advertisings || [];
 
-                for (const id of imagesToRemovedById) {
-                    const thumb = await Thumbnails.findByPk(id);
-                    if (thumb) {
-                      remove_image(thumb.path);
-                      await thumb.destroy();
-                    }
-                  }
+        if (movie_removed) {
+        req.body.movie_url = null;
+        }
+
+        if (thumbnails_removed) {
+        try {
+            const idsToRemove = thumbnails_removed
+            .split(',')
+            .map(id => Number(id))
+            .filter(Boolean);
+
+            for (const id of idsToRemove) {
+            const thumb = await Thumbnails.findByPk(id);
+
+            if (!thumb) continue;
+
+            try {
+                remove_image(thumb.path); // remove do disco
+            } catch (err) {
+                console.warn("Erro ao remover arquivo físico:", thumb.path);
             }
 
-            if(thumbnail_length && thumbnail_length > 0){
-                const thumbnails = req.body.images.slice(0, Number(thumbnail_length));
-                for (const fileName of thumbnails) {
-                    await Thumbnails.create({
-                      fk_product_id: Number(product_id),
-                      path: fileName,
-                      type: 0
-                    });
-                  }
+            await thumb.destroy(); // remove do banco
             }
 
-            if(advertising_length && advertising_length > 0){
-                console.log('adicionando advertising')
-                const advertisings = req.body.images.slice( Number(thumbnail_length), Number(thumbnail_length) + Number(advertising_length) );
+        } catch (error) {
+            console.error("Erro ao processar remoção de imagens:", error);
+        }
+        }
 
-                for (const fileName of advertisings) {
-                    await Thumbnails.create({
-                      fk_product_id: Number(product_id),
-                      path: fileName,
-                      type: 1
-                    });
-                  }
-            };
-
-            const product = await Product.findByPk(product_id);
-            await product.update(req.body);
-
-            const updated = await Product.findOne({
-                where: { product_id },
-                include: [
-                    { model: Brand, as: 'brandProduct' },
-                    { model: Category, as: 'categoryProduct' },
-                    { model: Thumbnails, as: 'thumbnails', require: false }
-                ]
+        const saveImages = async (files, type) => {
+        for (const file of files) {
+            await Thumbnails.create({
+            fk_product_id: product_id,
+            path: `/${file.fieldname}/${file.filename}`,
+            type
             });
+        }
+        };
 
-            return res.json(updated);
+        await saveImages(thumbnails, 0);
+        await saveImages(advertisings, 1);
+
+        const product = await Product.findByPk(product_id);
+
+        if (!product) {
+        return res.status(404).json({ error: "Product not found" });
+        }
+
+        await product.update(req.body);
+
+        const updated = await Product.findOne({
+        where: { product_id },
+        include: [
+            { model: Brand, as: 'brandProduct' },
+            { model: Category, as: 'categoryProduct' },
+            { model: Thumbnails, as: 'thumbnails', required: false }
+        ]
+        });
+
+        return res.json(updated);
 
         } catch (error) {
             console.log(error);

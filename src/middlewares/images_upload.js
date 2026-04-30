@@ -3,8 +3,12 @@ const fs = require('fs');
 const multer = require('multer');
 
 const storage = multer.diskStorage({
+
     destination: (req, file, cb) => {
-        const localPath = path.resolve(__dirname, '../public/thumbnails');
+        // usa o nome do campo pra separar automaticamente
+        const folder = file.fieldname; // "thumbnails" ou "advertisings"
+
+        const localPath = path.resolve(__dirname, `../public/${folder}`);
 
         if (!fs.existsSync(localPath)) {
             fs.mkdirSync(localPath, { recursive: true });
@@ -12,24 +16,28 @@ const storage = multer.diskStorage({
 
         cb(null, localPath);
     },
+
     filename: (req, file, cb) => {
-        const uniqueSuffix = `${Date.now()}_${Math.random()}.jpg`;
+        const ext = path.extname(file.originalname);
 
-        if (!req.body.images) req.body.images = [];
-        req.body.images.push(`/thumbnails/${uniqueSuffix}`);
+        const uniqueSuffix = `${Date.now()}_${Math.random()
+            .toString(36)
+            .substring(2, 8)}`;
 
-        cb(null, uniqueSuffix);
+        const filename = `${uniqueSuffix}${ext}`;
+
+        cb(null, filename);
     }
 });
 
 const fileFilter = (req, file, cb) => {
     if (file.mimetype.startsWith('image/')) {
-        cb(null, true);
-    } else {
-        const error = new Error('Only image files are allowed!');
-        error.code = 'INVALID_FILE_TYPE';
-        cb(error, false);
+        return cb(null, true);
     }
+
+    const error = new Error('Only image files are allowed!');
+    error.code = 'INVALID_FILE_TYPE';
+    cb(error, false);
 };
 
 module.exports = multer({
