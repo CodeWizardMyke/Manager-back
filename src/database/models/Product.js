@@ -50,6 +50,10 @@ module.exports = (sequelize,DataTypes)=>{
     age_group:DataTypes.STRING,
     fk_category_id:DataTypes.INTEGER,
     fk_brand_id:DataTypes.INTEGER,
+    owner_employee_id: {
+      type: DataTypes.INTEGER,
+      allowNull: true
+    },
   },
   {
     tableName:'product',
@@ -68,6 +72,10 @@ module.exports = (sequelize,DataTypes)=>{
     Product.hasMany(models.Thumbnails, {
       foreignKey: "fk_product_id",
       as: "thumbnails",
+    });
+    Product.belongsTo(models.Employee, {
+      foreignKey: 'owner_employee_id',
+      as: 'owner'
     });
   };
   

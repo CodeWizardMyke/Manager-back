@@ -28,5 +28,11 @@ module.exports =  (sequelize, Datetypes) => {
     tableName:'employee',
     timestamps:true,
   });
+   Employee.associate = (models) => {
+    Employee.hasMany(models.Product, {
+      foreignKey: 'owner_employee_id',
+      as: 'product'
+    });
+   }
   return Employee;  
 };

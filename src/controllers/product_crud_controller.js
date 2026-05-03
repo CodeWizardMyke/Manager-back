@@ -1,4 +1,5 @@
-const { Product, Brand, Category, Thumbnails } = require('../database/models');
+const { Op } = require('sequelize');
+const { Product, Brand, Category, Thumbnails, HiddenProduct } = require('../database/models');
 const paginateDefine = require('../functions/paginateDefine');
 const remove_image = require('../functions/remove_image');
 
@@ -15,8 +16,26 @@ const saveImages = async (product_id, files, type) => {
 const product_crud_router = {
     create: async (req, res) => {
         try {
+            const {employee_id} = req.token_decoded;
+
+            const verifyProductsCreated = await Product.findAndCountAll({
+                where:{
+                    owner_employee_id:employee_id
+                }
+            })
+
+            if(employee_id !== 1){
+                if(verifyProductsCreated.count >= 2){
+                    return res.status(401).json({errors: [{path:'demo',msg:'Valor máximo excedido na versão demo do projeto.'}] })
+                }
+            }
+
             const thumbnails = req.files?.thumbnails || [];
             const advertisings = req.files?.advertisings || [];
+            
+            if(employee_id !== 1){
+                req.body.owner_employee_id = employee_id;
+            }
 
             const product = await Product.create(req.body);
 
@@ -33,9 +52,37 @@ const product_crud_router = {
 
     read: async (req, res) => {
         try {
+            const {employee_id} = req.token_decoded;
+
             const { size, page } = paginateDefine(req);
 
+            const hiddenProducts = await HiddenProduct.findAll({
+                where:{
+                    fk_employee_id:employee_id
+                },
+                attributes:['fk_product_id']
+            });
+
+            const hiddenIds = hiddenProducts.map( 
+                item => item.fk_product_id
+            );
+
+            const whereClauser = {  
+                [Op.or]: [
+                    { owner_employee_id: null },
+                    { owner_employee_id: employee_id },
+                ],
+            };
+
+            if(hiddenIds.length > 0){
+                // serarando o where de hiddens id pq alguns bancos de dados podem dar problemas e criar slq estranhos caso nao houver ids no array
+                whereClauser.product_id = {
+                    [Op.notIn]: hiddenIds
+                }
+            }
+
             const products = await Product.findAndCountAll({
+                where:whereClauser,
                 limit: size,
                 offset: size * (page - 1),
                 distinct: true,
@@ -57,65 +104,92 @@ const product_crud_router = {
         try {
             const { product_id, thumbnails_removed, movie_removed } = req.body;
 
-        if (!product_id) {
-            return res.status(400).json({ error: "product_id is required" });
-        }
+            const { employee_id } = req.token_decoded;
 
-        const thumbnails = req.files?.thumbnails || [];
-        const advertisings = req.files?.advertisings || [];
+            if (!product_id) {
+                return res.status(400).json({ error: "product_id is required" });
+            };
 
-        if (movie_removed) {
-        req.body.movie_url = null;
-        }
-
-        if (thumbnails_removed) {
-        try {
-            const idsToRemove = thumbnails_removed
-            .split(',')
-            .map(id => Number(id))
-            .filter(Boolean);
-
-            for (const id of idsToRemove) {
-            const thumb = await Thumbnails.findByPk(id);
-
-            if (!thumb) continue;
-
-            try {
-                remove_image(thumb.path); // remove do disco
-            } catch (err) {
-                console.warn("Erro ao remover arquivo físico:", thumb.path);
+            const isHidden = await HiddenProduct.findOne({
+                where:{
+                    fk_employee_id: employee_id,
+                    fk_product_id: product_id
+                }
+            });
+       
+            if(isHidden ){
+                return res.status(401).json({
+                    errors:[{
+                        path:'demo',
+                        msg:'objeto de atualização inválido!'
+                    }]
+                });
             }
 
-            await thumb.destroy(); // remove do banco
+            const onwer = employee_id === 1 ? null : employee_id;
+            
+            const product = await Product.findOne({
+                where:{
+                    product_id,
+                    owner_employee_id: onwer 
+                }
+            });
+                    
+            if (!product) {
+                return res.status(404).json({ error: "Product not found" });
             }
 
-        } catch (error) {
-            console.error("Erro ao processar remoção de imagens:", error);
-        }
-        }
-   
+            const thumbnails = req.files?.thumbnails || [];
+            const advertisings = req.files?.advertisings || [];
 
-        const product = await Product.findByPk(product_id);
+            if (movie_removed) { req.body.movie_url === "true"; }
 
-        await saveImages(product_id,thumbnails, 0);
-        await saveImages(product_id,advertisings, 1);
+            if (thumbnails_removed) {
+                try {
+                    const idsToRemove = thumbnails_removed
+                    .split(',')
+                    .map(id => Number(id))
+                    .filter(Boolean);
 
-        if (!product) {
-        return res.status(404).json({ error: "Product not found" });
-        }
+                    for (const id of idsToRemove) {
+                   const thumb = await Thumbnails.findOne({
+                        where:{
+                            thumbnail_id: id,
+                            fk_product_id: product_id
+                        }
+                    });
 
-        await product.update(req.body);
+                    if (!thumb) continue;
 
-        const updated = await Product.findOne({
-        where: { product_id },
-        include: [
-            { model: Brand, as: 'brandProduct' },
-            { model: Category, as: 'categoryProduct' },
-            { model: Thumbnails, as: 'thumbnails', required: false }
-        ]
-        });
+                    try {
+                        remove_image(thumb.path); // remove do disco
+                    } catch (err) {
+                        console.warn("Erro ao remover arquivo físico:", thumb.path);
+                    }
 
-        return res.json(updated);
+                    await thumb.destroy(); // remove do banco
+                    }
+
+                } catch (error) {
+                    console.error("Erro ao processar remoção de imagens:", error);
+                }
+            }
+
+            await saveImages(product_id,thumbnails, 0);
+            await saveImages(product_id,advertisings, 1);
+
+            await product.update(req.body);
+
+            const updated = await Product.findOne({
+                where: { product_id },
+                include: [
+                    { model: Brand, as: 'brandProduct' },
+                    { model: Category, as: 'categoryProduct' },
+                    { model: Thumbnails, as: 'thumbnails', required: false }
+                ]
+            });
+
+            return res.json(updated);
 
         } catch (error) {
             console.log(error);
@@ -127,29 +201,132 @@ const product_crud_router = {
         try {
             const { product_id } = req.headers;
 
-            if(!product_id) return res.status(400).json('product_id is required in headers');
+            const { employee_id } = req.token_decoded;
 
-            const product = await Product.findByPk(product_id);
+            if (!product_id) {
+                return res
+                    .status(400)
+                    .json('product_id is required in headers');
+            }
 
-            if(!product) return res.status(404).json(`product_id =${product_id} not found`);
-
-            const thumbnails = await Thumbnails.findAll({
-                where: { fk_product_id: product_id }
+            /*
+                Verifica se o produto pertence ao usuário.
+                Produtos globais NÃO podem ser deletados.
+            */
+            const product = await Product.findOne({
+                where: {
+                    product_id,
+                    owner_employee_id: employee_id
+                }
             });
 
-            for (const thumb of thumbnails) {
-                remove_image(thumb.path);
-                await thumb.destroy();
-            }
-            
-            await product.destroy();
-            
-            return res.json(`successfully deleted product_id =${product_id}`);
+            /*
+                Se não encontrou produto do usuário,
+                verifica se é um produto global.
+            */
+        if (!product) {
 
-        } catch (error) {
-            console.log(error);
-            return res.status(500).json(error);
+            const globalProduct = await Product.findOne({
+                where: {
+                    product_id,
+                    owner_employee_id: null
+                }
+            });
+
+            /*
+                Produto global:
+                apenas oculta para o usuário
+            */
+            if (globalProduct) {
+
+                const alreadyHidden = await HiddenProduct.findOne({
+                    where: {
+                        fk_employee_id: employee_id,
+                        fk_product_id: product_id
+                    }
+                });
+
+                if (!alreadyHidden) {
+
+                    await HiddenProduct.create({
+                        fk_employee_id: employee_id,
+                        fk_product_id: product_id,
+                        expires_at: new Date(
+                            Date.now() + 3 * 24 * 60 * 60 * 1000
+                        )
+                    });
+
+                }
+
+                return res.json({
+                    msg: 'Produto ocultado da visualização do usuário.'
+                });
+
+            }
+
+            return res.status(404).json({
+                errors: [{
+                    path: 'product',
+                    msg: `product_id=${product_id} not found`
+                }]
+            });
+
         }
+
+        /*
+            Remove thumbnails do produto do usuário
+        */
+        const thumbnails = await Thumbnails.findAll({
+            where: {
+                fk_product_id: product_id
+            }
+        });
+
+        for (const thumb of thumbnails) {
+
+            try {
+
+                remove_image(thumb.path);
+
+            } catch (error) {
+
+                console.warn(
+                    'Erro ao remover imagem física:',
+                    thumb.path
+                );
+
+            }
+
+            await thumb.destroy();
+
+        }
+
+        /*
+            Remove hidden references
+            caso existam
+        */
+        await HiddenProduct.destroy({
+            where: {
+                fk_product_id: product_id
+            }
+        });
+
+        /*
+            Remove produto
+        */
+        await product.destroy();
+
+        return res.json({
+            msg: `successfully deleted product_id=${product_id}`
+        });
+
+    } catch (error) {
+
+        console.log(error);
+
+        return res.status(500).json(error);
+
+    }
     }
 };
 
