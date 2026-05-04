@@ -2,7 +2,7 @@ const { Cart_item, Cart, Client, Product } = require('../database/models');
 
 const paginateDefine = require('../functions/paginateDefine');
 
-const { validateCartOwnership } = require('../services/ownership.service.js');
+const { validateCartOwnership } = require('../services/ownership.service');
 
 const cart_items_crud_controller = {
 
