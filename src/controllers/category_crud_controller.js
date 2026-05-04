@@ -1,99 +1,327 @@
-const {Category} = require('../database/models');
+const { Category } = require('../database/models');
 
 const { Op } = require('sequelize');
+
 const paginateDefine = require('../functions/paginateDefine');
 
-const category_controller =  {
-    create: async (req,res) =>{
+const {
+    validateDemoLimit
+} = require('../services/limits.service');
+
+const {
+    findVisibleEntity
+} = require('../services/ownership.service');
+
+const category_controller = {
+
+    create: async (req, res) => {
+
         try {
-            const {category_name} = req.body;
 
-            const categoryIsExistis = await Category.findAll({
-                where:{category_name: category_name }
-            })
+            const { category_name } = req.body;
 
-            if(categoryIsExistis.length){
-                return res.status(401).json({msg:'Essa categoria já existe!'})
-            }
+            const { employee_id } = req.token_decoded;
 
             if(!category_name){
-                return res.status(401).json({error:'Nome da categoria deve ser preenchido!'})
+
+                return res.status(400).json({
+                    error:'Nome da categoria deve ser preenchido!'
+                });
+
             }
 
-            const item = await Category.create(req.body);
-            return res.status(201).json({"msg":"Criado com sucesso", data:item});
-
-        } catch (error) {
-            console.log('error', error);
-            res.status(500).json(error);
-        }
-    },
-    read: async (req,res) => {
-        try {
-            const {query} = req.headers;
-            const {size,page} = paginateDefine(req);
-            
-            const response = await Category.findAndCountAll({
-                where:{ category_name: {[Op.like]:`%${query}%`} },
-                limit:size,
-                offset:size * (page -1)
+            /*
+                Limite demo
+            */
+            const limitReached = await validateDemoLimit({
+                model: Category,
+                employee_id
             });
-            return res.status(200).json(response);
 
-        } catch (error) {
-            console.log('error', error);
-            res.status(500).json(error);
-        }
-    },
-    update: async (req,res) => {
-        try {
-            const { id } = req.headers;
-            
-            const searchItemForUpdate = await Category.findByPk(id);
+            if(limitReached){
 
-            if(!searchItemForUpdate){
-                return res.status(401).json({msg:"Nenhuma categoria encontrada com esse id!"})
+                return res.status(403).json({
+                    errors:[{
+                        path:'demo',
+                        msg:'Limite de categorias atingido na versão demo.'
+                    }]
+                });
+
             }
 
-            const updated = await searchItemForUpdate.update(req.body);
+            /*
+                Verifica duplicidade
+            */
+            const exists = await Category.findOne({
+                where:{ category_name }
+            });
 
+            if(exists){
 
-            return res.json({ message: "Category updated successfully", updated: updated });
-          } catch (error) {
+                return res.status(409).json({
+                    msg:'Essa categoria já existe!'
+                });
+
+            }
+
+            /*
+                Define owner (se não for admin/demo global)
+            */
+            const payload = {
+                ...req.body,
+                owner_employee_id:
+                    employee_id === 1 ? null : employee_id
+            };
+
+            const item = await Category.create(payload);
+
+            return res.status(201).json({
+                msg:'Criado com sucesso',
+                data:item
+            });
+
+        } catch (error) {
+
             console.log(error);
+
             return res.status(500).json(error);
-          }
-          
+
+        }
+
     },
-    delete: async (req,res) => {
+
+   read: async (req, res) => {
+
+    try {
+
+        const { employee_id } = req.token_decoded;
+
+        const { query = '' } = req.headers;
+
+        const { size, page } = paginateDefine(req);
+
+        const response = await Category.findAndCountAll({
+
+            where:{
+
+                category_name:{
+                    [Op.like]: `%${query}%`
+                },
+
+                [Op.or]: [
+                    { owner_employee_id: null },        // globais
+                    { owner_employee_id: employee_id }  // do usuário
+                ]
+
+            },
+
+            limit: size,
+
+            offset: size * (page - 1),
+
+            distinct: true
+
+        });
+
+        return res.status(200).json(response);
+
+    } catch (error) {
+
+        console.log(error);
+
+        return res.status(500).json(error);
+
+    }
+
+    },
+    update: async (req, res) => {
+
         try {
-            const {id} = req.headers;
 
-            const deleted = await Category.destroy({where:{category_id:id}});
+            const { id } = req.headers;
 
-            if(deleted === 0){
-                return res.status(404).json({error:'Categoria não encontrada!'})
+            const { employee_id } = req.token_decoded;
+
+            if(!id){
+
+                return res.status(400).json({
+                    error:'id não informado'
+                });
+
             }
-            return res.status(201).json({msg:'Registro deletado com sucesso!'});
+
+            /*
+                Busca categoria visível
+            */
+            const category = await findVisibleEntity({
+                model: Category,
+                employee_id,
+                idField:'category_id',
+                idValue:id
+            });
+
+            if(!category){
+
+                return res.status(404).json({
+                    msg:'Categoria não encontrada!'
+                });
+
+            }
+
+            /*
+                Bloqueia edição de categoria global
+            */
+            if(category.owner_employee_id === null){
+
+                return res.status(403).json({
+                    errors:[{
+                        path:'category',
+                        msg:'Categorias padrão não podem ser editadas.'
+                    }]
+                });
+
+            }
+
+            /*
+                Segurança extra (não editar de outro usuário)
+            */
+            if(category.owner_employee_id !== employee_id){
+
+                return res.status(403).json({
+                    errors:[{
+                        path:'auth',
+                        msg:'Você não tem permissão para editar essa categoria.'
+                    }]
+                });
+
+            }
+
+            const updated = await category.update(req.body);
+
+            return res.json({
+                message:'Categoria atualizada com sucesso',
+                updated
+            });
 
         } catch (error) {
-            console.log('error', error);
-            return res.status(500).json(error);
-        }
-    },
-    getById: async (req,res) => {
-        try {
-            const {id} = req.headers;
 
+            console.log(error);
+
+            return res.status(500).json(error);
+
+        }
+
+    },
+
+    delete: async (req, res) => {
+
+        try {
+
+            const { id } = req.headers;
+
+            const { employee_id } = req.token_decoded;
+
+            if(!id){
+
+                return res.status(400).json({
+                    error:'id não informado'
+                });
+
+            }
+
+            const category = await Category.findByPk(id);
+
+            if(!category){
+
+                return res.status(404).json({
+                    error:'Categoria não encontrada!'
+                });
+
+            }
+
+            /*
+                Bloqueia exclusão de categoria global
+            */
+            if(category.owner_employee_id === null){
+
+                return res.status(403).json({
+                    errors:[{
+                        path:'category',
+                        msg:'Categorias padrão não podem ser deletadas.'
+                    }]
+                });
+
+            }
+
+            /*
+                Só pode deletar o que é seu
+            */
+            if(category.owner_employee_id !== employee_id){
+
+                return res.status(403).json({
+                    errors:[{
+                        path:'auth',
+                        msg:'Você não tem permissão para deletar essa categoria.'
+                    }]
+                });
+
+            }
+
+            await category.destroy();
+
+            return res.status(200).json({
+                msg:'Categoria deletada com sucesso!'
+            });
+
+        } catch (error) {
+
+            console.log(error);
+
+            return res.status(500).json(error);
+
+        }
+
+    },
+
+    getById: async (req, res) => {
+
+        try {
+
+            const { id } = req.headers;
+
+            if(!id){
+
+                return res.status(400).json({
+                    error:'id não informado'
+                });
+
+            }
+
+            /*
+                Todos podem visualizar
+            */
             const response = await Category.findByPk(id);
 
+            if(!response){
+
+                return res.status(404).json({
+                    error:'Categoria não encontrada!'
+                });
+
+            }
+
             return res.json(response);
-            
+
         } catch (error) {
-            console.log('error', error);
-            return res.status(500).json(error)
+
+            console.log(error);
+
+            return res.status(500).json(error);
+
         }
+
     }
-}
+
+};
 
 module.exports = category_controller;

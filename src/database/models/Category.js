@@ -7,6 +7,10 @@ module.exports = (Sequelize, DateTypes) =>{
             primaryKey:true,
         },
         category_name:DateTypes.STRING,
+        owner_employee_id: {
+            type: DateTypes.INTEGER,
+            allowNull: true
+        },
     },
     {
         tableName:'category',
@@ -18,6 +22,10 @@ module.exports = (Sequelize, DateTypes) =>{
         Category.hasMany(models.Product, { 
             foreignKey: 'fk_category_id', 
             as: 'categoryProduct' 
+        });
+        Category.belongsTo(models.Employee, {
+            foreignKey: 'owner_employee_id',
+            as: 'owner'
         });
     };
 

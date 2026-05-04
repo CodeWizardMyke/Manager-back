@@ -7,6 +7,10 @@ module.exports = (Sequelize, DateTypes) =>{
             primaryKey:true,
         },
         brand_name:DateTypes.STRING,
+        owner_employee_id: {
+            type: DateTypes.INTEGER,
+            allowNull: true
+        },
     },
     {
         tableName:'brand',
@@ -18,6 +22,10 @@ module.exports = (Sequelize, DateTypes) =>{
         Brand.hasMany(models.Product, { 
             foreignKey: 'fk_brand_id', 
             as: 'brandProduct' 
+        });
+        Brand.belongsTo(models.Employee, {
+            foreignKey: 'owner_employee_id',
+            as: 'owner'
         });
     };
     return Brand;
