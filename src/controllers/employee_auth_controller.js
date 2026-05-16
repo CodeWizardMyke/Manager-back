@@ -1,6 +1,7 @@
 require('dotenv').config();
 
 const { Employee } = require('../database/models');
+
 const jwt = require('jsonwebtoken');
 
 const employee_auth_controller = {
@@ -16,6 +17,15 @@ const employee_auth_controller = {
       };
       return res.json(userAuth);
 
+    } catch (error) {
+      console.log(error);
+      return res.status(500).json(error)  
+    }
+  },
+  create: async (req, res) =>{
+    try {
+      const data = await Employee.create(req.body)
+      return res.json(data);
     } catch (error) {
       console.log(error);
       return res.status(500).json(error)  

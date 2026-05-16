@@ -10,10 +10,15 @@ const employee_auth_check = async (req, res, next) => {
     }
   });
 
-  if(!data) return res.status(409).send({errors:[{path:'email', msg:'credenciais incorretas!'}]}); 
+  const resultError = {errors:[
+    {path:'email', msg:'credenciais de email incorreta!'},
+    {path:'password', msg:'credenciais de senha incorreta!'}
+  ]}
+
+  if(!data) return res.status(409).send(resultError); 
 
   const decoded = bcrypt.compareSync(password, data.password);
-  if(!decoded) return res.status(409).send({errors:[{path:'email', msg:'credenciais incorretas!'}]});
+  if(!decoded) return res.status(409).send(resultError);
 
   data.password = null;
   req.userAuthPass = data;
