@@ -37,7 +37,7 @@ const category_controller = {
                 model: Category,
                 employee_id
             });
-
+            
             if(limitReached){
 
                 return res.status(403).json({

@@ -1,7 +1,7 @@
 async function validateDemoLimit({
     model,
     employee_id,
-    limit = 2
+    limit = 200
 }) {
 
     if(employee_id === 1){
