@@ -4,6 +4,7 @@ const router = express.Router();
 const product_search_controller = require('../controllers/product_search_controller');
 const jsonwebtoken = require('../middlewares/jsonwebtoken');
 
+router.get('/', jsonwebtoken, product_search_controller.getAll);
 router.get('/title', jsonwebtoken, product_search_controller.getByTitle);
 router.get('/id', jsonwebtoken, product_search_controller.getById);
 router.get('/GTIN', jsonwebtoken, product_search_controller.getByGTIN);

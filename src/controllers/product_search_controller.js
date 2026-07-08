@@ -55,6 +55,59 @@ const buildWhereVisibility = async (employee_id) => {
 
 const product_search_controller = {
 
+    getAll: async (req,res) =>{
+                try {
+
+            const { employee_id } = req.token_decoded;
+
+            const { size, page } = paginateDefine(req);
+
+
+
+            const whereVisibility = await buildWhereVisibility(
+                employee_id
+            );
+
+            const data = await Product.findAndCountAll({
+
+                where:{ owner_employee_id: employee_id},
+
+                limit: size,
+
+                offset: size * (page - 1),
+
+                distinct: true,
+
+                include:[
+                    {
+                        model: Brand,
+                        as:'brandProduct'
+                    },
+                    {
+                        model: Category,
+                        as:'categoryProduct'
+                    },
+                    {
+                        model: Thumbnails,
+                        as:'thumbnails',
+                        required:false
+                    },
+                ],
+
+            });
+
+            return res.json(data);
+
+        } catch (error) {
+
+            console.log(error);
+
+            return res.status(500).json(error);
+
+        }
+
+    },
+
     getByTitle: async (req, res) => {
 
         try {

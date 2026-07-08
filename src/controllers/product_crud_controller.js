@@ -261,8 +261,6 @@ const product_crud_controller = {
                 movie_removed
             } = req.body;
 
-
-
             // garante array
             if(!Array.isArray(thumbnails_removed)){
                 thumbnails_removed = [
@@ -291,7 +289,6 @@ const product_crud_controller = {
                 }
 
             });
-
 
             if(!product){
 
@@ -329,11 +326,7 @@ const product_crud_controller = {
                 req.body.movie_url = null;
             }
 
-
-
             await product.update(req.body);
-
-
 
             const updated = await Product.findOne({
 
