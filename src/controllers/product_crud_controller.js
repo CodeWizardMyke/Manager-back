@@ -92,7 +92,7 @@ const product_crud_controller = {
         try {
 
             const { employee_id } = req.token_decoded;
-
+            
 
             const count = await Product.count({
                 where:{
@@ -253,7 +253,6 @@ const product_crud_controller = {
     update: async(req,res)=>{
 
         try {
-
 
             let {
                 product_id,

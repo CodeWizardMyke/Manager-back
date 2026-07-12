@@ -48,6 +48,7 @@ module.exports = (sequelize,DataTypes)=>{
     isNewArrival:DataTypes.STRING,
     targetGender:DataTypes.STRING,
     age_group:DataTypes.STRING,
+    specifications:DataTypes.JSON,
     fk_category_id:DataTypes.INTEGER,
     fk_brand_id:DataTypes.INTEGER,
     owner_employee_id: {
