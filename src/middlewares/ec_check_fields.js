@@ -5,6 +5,7 @@ const {validationResult} = require ('express-validator');
 const bcrypt = require ('bcrypt');
 
 const ec_check_fields = async (req, res, next )=> {
+  
   const {email} = req.body;
   if(email){
     const data = await Employee.findOne({where: {email: email}})

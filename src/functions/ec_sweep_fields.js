@@ -2,10 +2,9 @@ const {check} = require('express-validator');
 
 const pc_sweep_fields = [
   check('name').notEmpty().withMessage('Nome e sobrenome não inseridos!').trim(),
+  
   check('email')
   .trim()
-  .notEmpty()
-  .withMessage('Endereço de email vazio!')
   .isEmail()
   .withMessage('Endereço de email inválido!'),
  
