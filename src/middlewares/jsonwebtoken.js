@@ -23,6 +23,7 @@ const jsonwebtoken = async (req, res, next) => {
     if(error) return res.status(401).json({errors: [{path:'token',msg:'algum Error com token ocorreu!'}] } );
     
     req.token_decoded = decoded;
+    
     return next();
   });
 };

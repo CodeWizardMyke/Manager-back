@@ -30,6 +30,9 @@ const client_cart_router = require('./src/routes/client_cart_router');
 const category_crud_router = require('./src/routes/category_crud_router');
 const brand_crud_router = require('./src/routes/brand_crud_router');
 
+const dashboard_router = require("./src/routes/dashboard_router");
+
+app.use('/api/dashboard',dashboard_router);
 app.use('/cart', client_cart_router);
 app.use('/api/auth', employee_auth_router);
 app.use('/api/product/search', product_search_router);
