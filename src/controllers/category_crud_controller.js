@@ -1,4 +1,4 @@
-const { Category } = require('../database/models');
+const { Category, Product } = require('../database/models');
 
 const { Op } = require('sequelize');
 
@@ -137,13 +137,14 @@ const category_controller = {
     update: async (req, res) => {
 
         try {
-
-            const { id } = req.headers;
-
+            const { category_id } = req.body;
             const { employee_id } = req.token_decoded;
 
-            if(!id){
+            const headerId = req?.headers?.id;
 
+            const id = category_id || headerId ;
+
+            if(!id ){
                 return res.status(400).json({
                     error:'id não informado'
                 });
@@ -153,11 +154,12 @@ const category_controller = {
             /*
                 Busca categoria visível
             */
+
             const category = await findVisibleEntity({
                 model: Category,
                 employee_id,
                 idField:'category_id',
-                idValue:id
+                idValue: id
             });
 
             if(!category){
@@ -171,6 +173,7 @@ const category_controller = {
             /*
                 Bloqueia edição de categoria global
             */
+
             if(category.owner_employee_id === null){
 
                 return res.status(403).json({
@@ -218,59 +221,68 @@ const category_controller = {
         try {
 
             const { id } = req.headers;
-
             const { employee_id } = req.token_decoded;
 
-            if(!id){
-
+            if (!id) {
                 return res.status(400).json({
-                    error:'id não informado'
+                    error: 'id não informado'
                 });
-
             }
 
             const category = await Category.findByPk(id);
 
-            if(!category){
-
+            if (!category) {
                 return res.status(404).json({
-                    error:'Categoria não encontrada!'
+                    error: 'Categoria não encontrada!'
                 });
-
             }
 
             /*
                 Bloqueia exclusão de categoria global
             */
-            if(category.owner_employee_id === null){
-
+            if (category.owner_employee_id === null) {
                 return res.status(403).json({
-                    errors:[{
-                        path:'category',
-                        msg:'Categorias padrão não podem ser deletadas.'
+                    errors: [{
+                        path: 'category',
+                        msg: 'Categorias padrão não podem ser deletadas.'
                     }]
                 });
-
             }
 
             /*
                 Só pode deletar o que é seu
             */
-            if(category.owner_employee_id !== employee_id){
-
+            if (category.owner_employee_id !== employee_id) {
                 return res.status(403).json({
-                    errors:[{
-                        path:'auth',
-                        msg:'Você não tem permissão para deletar essa categoria.'
+                    errors: [{
+                        path: 'auth',
+                        msg: 'Você não tem permissão para deletar essa categoria.'
                     }]
                 });
+            }
 
+            /*
+                Verifica se existem produtos utilizando esta categoria
+            */
+            const totalProducts = await Product.count({
+                where: {
+                    fk_category_id: id
+                }
+            });
+
+            if (totalProducts > 0) {
+                return res.status(409).json(
+                    {
+                        path: 'category',
+                        msg: `Não é possível excluir esta categoria, pois ela está sendo utilizada por ${totalProducts} produto${totalProducts > 1 ? 's' : ''}.`
+                    }
+                );
             }
 
             await category.destroy();
 
             return res.status(200).json({
-                msg:'Categoria deletada com sucesso!'
+                msg: 'Categoria deletada com sucesso!'
             });
 
         } catch (error) {
@@ -280,7 +292,6 @@ const category_controller = {
             return res.status(500).json(error);
 
         }
-
     },
 
     getById: async (req, res) => {

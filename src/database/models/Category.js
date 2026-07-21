@@ -11,6 +11,10 @@ module.exports = (Sequelize, DateTypes) =>{
             type: DateTypes.INTEGER,
             allowNull: true
         },
+        icon:{
+            type:DateTypes.STRING,
+            allowNull:true,
+        }
     },
     {
         tableName:'category',
